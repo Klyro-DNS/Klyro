@@ -4,7 +4,7 @@ klyrodns
 # Build output
 /bin/
 /dist/
-
+init.md
 # Go test cache
 *.test
 *.out
