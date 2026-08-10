@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Klyro DNS</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,-apple-system,sans-serif;background:#0f1117;color:#e1e4e8;min-height:100vh}
+.login-wrap{display:flex;justify-content:center;align-items:center;min-height:100vh}
+.login-box{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:40px;width:380px}
+.login-box h2{margin-bottom:8px;font-size:22px;color:#58a6ff}
+.login-box p{color:#8b949e;font-size:14px;margin-bottom:24px}
+.login-box .error{background:#4a1c1c;color:#f85149;padding:8px 12px;border-radius:6px;font-size:13px;margin-bottom:12px;display:none}
+.header{background:#161b22;border-bottom:1px solid #30363d;padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
+.header-left{display:flex;align-items:center;gap:12px}
+.header h1{font-size:20px;color:#58a6ff}
+.header span{color:#8b949e;font-size:14px}
+.header-user{display:flex;align-items:center;gap:12px;color:#8b949e;font-size:14px}
+.container{max-width:1200px;margin:0 auto;padding:24px}
+.tabs{display:flex;gap:4px;margin-bottom:24px;border-bottom:1px solid #30363d;padding-bottom:0}
+.tab{padding:10px 20px;cursor:pointer;border:none;background:none;color:#8b949e;font-size:14px;border-bottom:2px solid transparent;transition:all .2s}
+.tab:hover{color:#e1e4e8}
+.tab.active{color:#58a6ff;border-bottom-color:#58a6ff}
+.panel{display:none}
+.panel.active{display:block}
+.card{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:20px;margin-bottom:16px}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.card-title{font-size:16px;font-weight:600}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:10px 12px;border-bottom:1px solid #30363d;color:#8b949e;font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+td{padding:10px 12px;border-bottom:1px solid #21262d;font-size:14px}
+tr:hover{background:#1c2128}
+.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:12px;font-weight:500}
+.badge-green{background:#1b4332;color:#40c057}
+.badge-blue{background:#1a2744;color:#58a6ff}
+.badge-red{background:#4a1c1c;color:#f85149}
+.btn{padding:8px 16px;border-radius:6px;border:1px solid #30363d;background:#21262d;color:#e1e4e8;cursor:pointer;font-size:14px;transition:all .2s}
+.btn:hover{background:#30363d}
+.btn-primary{background:#238636;border-color:#238636;color:#fff}
+.btn-primary:hover{background:#2ea043}
+.btn-danger{background:#da3633;border-color:#da3633;color:#fff}
+.btn-danger:hover{background:#f85149}
+.btn-sm{padding:4px 10px;font-size:12px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;margin-bottom:6px;font-size:13px;color:#8b949e}
+.form-group input,.form-group select{width:100%;padding:8px 12px;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#e1e4e8;font-size:14px}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:#58a6ff}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;justify-content:center;align-items:center}
+.modal-overlay.show{display:flex}
+.modal{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:24px;width:480px;max-width:90vw}
+.modal h3{margin-bottom:20px;font-size:18px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+.empty{text-align:center;padding:40px;color:#8b949e}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:20px}
+.stat-value{font-size:28px;font-weight:700;color:#58a6ff}
+.stat-label{font-size:13px;color:#8b949e;margin-top:4px}
+.toast{position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:8px;font-size:14px;z-index:200;animation:slideIn .3s ease}
+.toast-success{background:#1b4332;color:#40c057;border:1px solid #238636}
+.toast-error{background:#4a1c1c;color:#f85149;border:1px solid #da3633}
+@keyframes slideIn{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+</style>
+</head>
+<body>
+
+<!-- Login Page -->
+<div id="loginPage" class="login-wrap">
+  <div class="login-box">
+    <h2>Klyro DNS</h2>
+    <p>Sign in to manage your DNS</p>
+    <div class="error" id="loginError"></div>
+    <div class="form-group">
+      <label>Username</label>
+      <input id="loginUser" type="text" placeholder="admin" autofocus>
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input id="loginPass" type="password" placeholder="password">
+    </div>
+    <button class="btn btn-primary" style="width:100%" onclick="doLogin()">Sign In</button>
+  </div>
+</div>
+
+<!-- Dashboard (hidden until auth) -->
+<div id="dashboardPage" style="display:none">
+  <div class="header">
+    <div class="header-left">
+      <h1>Klyro DNS</h1>
+      <span>DNS Management Dashboard</span>
+    </div>
+    <div class="header-user">
+      <span id="currentUser"></span>
+      <button class="btn btn-sm" onclick="doLogout()">Logout</button>
+    </div>
+  </div>
+  <div class="container">
+    <div class="tabs">
+      <div class="tab active" data-tab="zones">Zones</div>
+      <div class="tab" data-tab="records">Records</div>
+      <div class="tab" data-tab="clients">Clients</div>
+      <div class="tab" data-tab="queries">Queries</div>
+    </div>
+
+    <div id="zones" class="panel active">
+      <div class="stats" id="stats"></div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">DNS Zones</div>
+          <button class="btn btn-primary" onclick="showAddZone()">+ Add Zone</button>
+        </div>
+        <table>
+          <thead><tr><th>Zone</th><th>Type</th><th>Records</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="zonesTable"></tbody>
+        </table>
+        <div class="empty" id="zonesEmpty" style="display:none">No zones configured. Create one to get started.</div>
+      </div>
+    </div>
+
+    <div id="records" class="panel">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            Records for <select id="zoneSelect" onchange="loadRecords()" style="background:#0d1117;border:1px solid #30363d;color:#e1e4e8;padding:4px 8px;border-radius:4px"></select>
+          </div>
+          <button class="btn btn-primary" onclick="showAddRecord()">+ Add Record</button>
+        </div>
+        <table>
+          <thead><tr><th>Name</th><th>Type</th><th>TTL</th><th>Value</th><th>Priority</th><th>Actions</th></tr></thead>
+          <tbody id="recordsTable"></tbody>
+        </table>
+        <div class="empty" id="recordsEmpty" style="display:none">No records in this zone.</div>
+      </div>
+    </div>
+
+    <div id="clients" class="panel">
+      <div class="stats" id="clientStats"></div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Connected Clients</div>
+          <button class="btn btn-sm" onclick="loadClients()">Refresh</button>
+        </div>
+        <table>
+          <thead><tr><th>Client IP</th><th>Queries</th><th>A</th><th>AAAA</th><th>CNAME</th><th>MX</th><th>TXT</th><th>Other</th><th>Last Seen</th></tr></thead>
+          <tbody id="clientsTable"></tbody>
+        </table>
+        <div class="empty" id="clientsEmpty" style="display:none">No clients yet. Waiting for DNS queries...</div>
+      </div>
+    </div>
+
+    <div id="queries" class="panel">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Recent Queries</div>
+          <button class="btn btn-sm" onclick="loadQueries()">Refresh</button>
+        </div>
+        <table>
+          <thead><tr><th>Time</th><th>Client</th><th>Domain</th><th>Type</th><th>Response</th></tr></thead>
+          <tbody id="queriesTable"></tbody>
+        </table>
+        <div class="empty" id="queriesEmpty" style="display:none">No queries recorded yet.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modals -->
+<div class="modal-overlay" id="addZoneModal">
+  <div class="modal">
+    <h3>Add Zone</h3>
+    <div class="form-group">
+      <label>Zone Name</label>
+      <input id="zoneName" placeholder="example.com">
+    </div>
+    <div class="form-group">
+      <label>Type</label>
+      <select id="zoneType"><option value="primary">Primary</option></select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('addZoneModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="addZone()">Create</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="addRecordModal">
+  <div class="modal">
+    <h3>Add Record</h3>
+    <div class="form-group">
+      <label>Name</label>
+      <input id="recName" placeholder="www or @ for root">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Type</label>
+        <select id="recType">
+          <option>A</option><option>AAAA</option><option>CNAME</option>
+          <option>MX</option><option>TXT</option><option>NS</option><option>SRV</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>TTL</label>
+        <input id="recTTL" type="number" value="3600">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Value</label>
+      <input id="recValue" placeholder="192.168.1.1">
+    </div>
+    <div class="form-group" id="priorityGroup" style="display:none">
+      <label>Priority</label>
+      <input id="recPriority" type="number" value="10">
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('addRecordModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="addRecord()">Add</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let zones=[];
+let currentZone='';
+let username='';
+
+// --- Auth ---
+async function checkAuth(){
+  const r=await fetch('/api/auth');
+  const d=await r.json();
+  if(d.authenticated){
+    showDashboard();
+  }else{
+    showLogin();
+  }
+}
+
+function showLogin(){
+  document.getElementById('loginPage').style.display='flex';
+  document.getElementById('dashboardPage').style.display='none';
+}
+
+function showDashboard(){
+  document.getElementById('loginPage').style.display='none';
+  document.getElementById('dashboardPage').style.display='block';
+  document.getElementById('currentUser').textContent=username||'admin';
+  loadZones();
+}
+
+async function doLogin(){
+  const user=document.getElementById('loginUser').value.trim();
+  const pass=document.getElementById('loginPass').value;
+  const errEl=document.getElementById('loginError');
+
+  if(!user||!pass){
+    errEl.textContent='Username and password required';
+    errEl.style.display='block';
+    return;
+  }
+
+  const r=await fetch('/api/login',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({username:user,password:pass})
+  });
+
+  if(!r.ok){
+    errEl.textContent='Invalid credentials';
+    errEl.style.display='block';
+    return;
+  }
+
+  username=user;
+  showDashboard();
+}
+
+document.getElementById('loginPass').addEventListener('keydown',e=>{
+  if(e.key==='Enter')doLogin();
+});
+
+async function doLogout(){
+  await fetch('/api/logout',{method:'POST'});
+  username='';
+  showLogin();
+}
+
+// --- Tabs ---
+document.querySelectorAll('.tab').forEach(t=>{
+  t.onclick=()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById(t.dataset.tab).classList.add('active');
+    if(t.dataset.tab==='records')loadRecords();
+    if(t.dataset.tab==='clients')loadClients();
+    if(t.dataset.tab==='queries')loadQueries();
+  };
+});
+
+document.getElementById('recType').onchange=function(){
+  document.getElementById('priorityGroup').style.display=this.value==='MX'?'block':'none';
+};
+
+function toast(msg,err){
+  const d=document.createElement('div');
+  d.className='toast '+(err?'toast-error':'toast-success');
+  d.textContent=msg;
+  document.body.appendChild(d);
+  setTimeout(()=>d.remove(),3000);
+}
+
+function closeModal(id){document.getElementById(id).classList.remove('show')}
+function showAddZone(){document.getElementById('addZoneModal').classList.add('show')}
+function showAddRecord(){document.getElementById('addRecordModal').classList.add('show')}
+
+// --- Zones ---
+async function loadZones(){
+  const r=await fetch('/api/zones');
+  if(r.status===401){showLogin();return}
+  zones=await r.json();
+  const t=document.getElementById('zonesTable');
+  const e=document.getElementById('zonesEmpty');
+  if(!zones||!zones.length){t.innerHTML='';e.style.display='block';return}
+  e.style.display='none';
+  t.innerHTML=zones.map(z=>`<tr>
+    <td><strong>${z.name}</strong></td>
+    <td><span class="badge badge-blue">${z.type}</span></td>
+    <td>${z.records}</td>
+    <td><span class="badge badge-green">Active</span></td>
+    <td><button class="btn btn-danger btn-sm" onclick="deleteZone('${z.name}')">Delete</button></td>
+  </tr>`).join('');
+
+  document.getElementById('stats').innerHTML=`
+    <div class="stat-card"><div class="stat-value">${zones.length}</div><div class="stat-label">Zones</div></div>
+    <div class="stat-card"><div class="stat-value">${zones.reduce((a,z)=>a+z.records,0)}</div><div class="stat-label">Total Records</div></div>
+  `;
+
+  const sel=document.getElementById('zoneSelect');
+  sel.innerHTML=zones.map(z=>`<option value="${z.name}">${z.name}</option>`).join('');
+  if(currentZone)sel.value=currentZone;
+}
+
+// --- Records ---
+async function loadRecords(){
+  currentZone=document.getElementById('zoneSelect').value;
+  if(!currentZone)return;
+  const r=await fetch(`/api/zones/${currentZone}/records`);
+  if(r.status===401){showLogin();return}
+  const recs=await r.json();
+  const t=document.getElementById('recordsTable');
+  const e=document.getElementById('recordsEmpty');
+  if(!recs||!recs.length){t.innerHTML='';e.style.display='block';return}
+  e.style.display='none';
+  t.innerHTML=recs.map(r=>`<tr>
+    <td>${r.name}</td>
+    <td><span class="badge badge-blue">${r.type}</span></td>
+    <td>${r.ttl}</td>
+    <td><code>${r.value}</code></td>
+    <td>${r.priority||'-'}</td>
+    <td><button class="btn btn-danger btn-sm" onclick="deleteRecord('${r.name}:${r.type}')">Delete</button></td>
+  </tr>`).join('');
+}
+
+async function addZone(){
+  const name=document.getElementById('zoneName').value.trim();
+  if(!name)return toast('Zone name required',true);
+  const r=await fetch('/api/zones',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,type:document.getElementById('zoneType').value,records:[]})});
+  if(!r.ok)return toast(await r.text(),true);
+  closeModal('addZoneModal');
+  document.getElementById('zoneName').value='';
+  toast('Zone created');
+  loadZones();
+}
+
+async function deleteZone(name){
+  if(!confirm(`Delete zone ${name}?`))return;
+  await fetch(`/api/zones/${name}`,{method:'DELETE'});
+  toast('Zone deleted');
+  loadZones();
+}
+
+async function addRecord(){
+  const data={
+    name:document.getElementById('recName').value.trim()||'@',
+    type:document.getElementById('recType').value,
+    ttl:parseInt(document.getElementById('recTTL').value)||3600,
+    value:document.getElementById('recValue').value.trim()
+  };
+  if(document.getElementById('recType').value==='MX'){
+    data.priority=parseInt(document.getElementById('recPriority').value)||10;
+  }
+  if(!data.value)return toast('Value required',true);
+  const r=await fetch(`/api/zones/${currentZone}/records`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+  if(!r.ok)return toast(await r.text(),true);
+  closeModal('addRecordModal');
+  toast('Record added');
+  loadRecords();
+  loadZones();
+}
+
+async function deleteRecord(id){
+  await fetch(`/api/zones/${currentZone}/records/${id}`,{method:'DELETE'});
+  toast('Record deleted');
+  loadRecords();
+  loadZones();
+}
+
+// --- Clients ---
+async function loadClients(){
+  const [clientsR, statsR]=await Promise.all([fetch('/api/clients'),fetch('/api/stats')]);
+  if(clientsR.status===401){showLogin();return}
+  const clients=await clientsR.json();
+  const stats=await statsR.json();
+
+  document.getElementById('clientStats').innerHTML=`
+    <div class="stat-card"><div class="stat-value">${stats.total_clients||0}</div><div class="stat-label">Active Clients</div></div>
+    <div class="stat-card"><div class="stat-value">${stats.total_queries||0}</div><div class="stat-label">Total Queries</div></div>
+    <div class="stat-card"><div class="stat-value">${Object.keys(stats.query_types||{}).length}</div><div class="stat-label">Query Types</div></div>
+  `;
+
+  const t=document.getElementById('clientsTable');
+  const e=document.getElementById('clientsEmpty');
+  if(!clients||!clients.length){t.innerHTML='';e.style.display='block';return}
+  e.style.display='none';
+
+  clients.sort((a,b)=>new Date(b.last_seen)-new Date(a.last_seen));
+
+  t.innerHTML=clients.map(c=>{
+    const q=c.queries||{};
+    const ago=timeAgo(new Date(c.last_seen));
+    return `<tr>
+      <td><code>${c.ip}</code></td>
+      <td><strong>${c.total_queries}</strong></td>
+      <td>${q.A||0}</td>
+      <td>${q.AAAA||0}</td>
+      <td>${q.CNAME||0}</td>
+      <td>${q.MX||0}</td>
+      <td>${q.TXT||0}</td>
+      <td>${Object.entries(q).filter(([k])=>!['A','AAAA','CNAME','MX','TXT'].includes(k)).reduce((a,[,v])=>a+v,0)}</td>
+      <td>${ago}</td>
+    </tr>`;
+  }).join('');
+}
+
+// --- Queries ---
+async function loadQueries(){
+  const r=await fetch('/api/queries?limit=200');
+  if(r.status===401){showLogin();return}
+  const queries=await r.json();
+  const t=document.getElementById('queriesTable');
+  const e=document.getElementById('queriesEmpty');
+  if(!queries||!queries.length){t.innerHTML='';e.style.display='block';return}
+  e.style.display='none';
+
+  queries.reverse();
+
+  t.innerHTML=queries.map(q=>{
+    const respClass=q.response==='success'?'badge-green':q.response==='nxdomain'?'badge-red':'badge-blue';
+    return `<tr>
+      <td>${new Date(q.timestamp).toLocaleTimeString()}</td>
+      <td><code>${q.client_ip}</code></td>
+      <td>${q.domain}</td>
+      <td><span class="badge badge-blue">${q.type}</span></td>
+      <td><span class="badge ${respClass}">${q.response}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function timeAgo(date){
+  const s=Math.floor((Date.now()-date.getTime())/1000);
+  if(s<60)return s+'s ago';
+  if(s<3600)return Math.floor(s/60)+'m ago';
+  if(s<86400)return Math.floor(s/3600)+'h ago';
+  return Math.floor(s/86400)+'d ago';
+}
+
+checkAuth();
+</script>
+</body>
+</html>
