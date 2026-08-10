@@ -1,0 +1,8 @@
+name: home.lab
+type: primary
+enabled: true
+records:
+    - name: www.3ddx
+      type: CNAME
+      ttl: 3602
+      value: 192.168.1.10
