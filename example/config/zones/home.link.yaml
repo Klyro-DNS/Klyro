@@ -1,0 +1,8 @@
+name: home.link
+type: primary
+enabled: true
+records:
+    - name: test
+      type: A
+      ttl: 3600
+      value: 192.168.1.10

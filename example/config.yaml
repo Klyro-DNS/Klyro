@@ -1,0 +1,10 @@
+$schema: "../config.schema.json"
+listen_addr: ":5353"
+http_addr: ":8080"
+upstreams:
+  - "8.8.8.8:53"
+  - "1.1.1.1:53"
+log_level: "info"
+config_dir: "config/zones"
+username: "admin"
+password: "admin"

@@ -1,0 +1,19 @@
+$schema: "../../../zone.schema.json"
+name: FUN.local
+type: primary
+enabled: true
+records:
+  - name: "@"
+    type: A
+    ttl: 300
+    value: "192.168.1.1"
+
+  - name: "nas"
+    type: A
+    ttl: 300
+    value: "192.168.1.100"
+
+  - name: "printer"
+    type: A
+    ttl: 300
+    value: "192.168.1.200"

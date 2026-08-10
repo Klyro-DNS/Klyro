@@ -1,0 +1,30 @@
+$schema: "../../../zone.schema.json"
+name: osama.com
+type: primary
+enabled: true
+records:
+  - name: "@"
+    type: A
+    ttl: 3600
+    value: "192.168.1.10"
+
+  - name: "www"
+    type: A
+    ttl: 3600
+    value: "192.168.1.10"
+
+  - name: "api"
+    type: A
+    ttl: 300
+    value: "192.168.1.20"
+
+  - name: "@"
+    type: MX
+    ttl: 3600
+    priority: 10
+    value: "mail.example.com"
+
+  - name: "blog"
+    type: CNAME
+    ttl: 3600
+    value: "www.example.com"
