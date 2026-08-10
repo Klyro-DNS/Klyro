@@ -1,0 +1,22 @@
+services:
+  klyrodns:
+    build: .
+    container_name: klyrodns
+    ports:
+      - "5353:5353/udp"
+      - "5353:5353/tcp"
+      - "8080:8080"
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+      - ./config/zones:/app/config/zones
+    environment:
+      - KLYRO_CONFIG=config.yaml
+      - KLYRO_USER=admin
+      - KLYRO_PASS=admin
+    restart: unless-stopped
+    networks:
+      - dns-net
+
+networks:
+  dns-net:
+    driver: bridge
