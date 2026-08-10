@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://klyro.dev/config.schema.json",
+  "title": "Klyro DNS Server Configuration",
+  "description": "Configuration file for the Klyro DNS server.",
+  "type": "object",
+  "required": ["listen_addr", "http_addr", "upstreams", "log_level", "config_dir", "username", "password"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Path to this JSON Schema file."
+    },
+    "listen_addr": {
+      "type": "string",
+      "description": "Address and port for the DNS server to listen on.",
+      "pattern": "^(:(\\d{1,5})|([0-9]{1,3}\\.){3}[0-9]{1,3}:(\\d{1,5}))$",
+      "examples": [":5353", "127.0.0.1:53", "0.0.0.0:5353"]
+    },
+    "http_addr": {
+      "type": "string",
+      "description": "Address and port for the HTTP API and dashboard.",
+      "pattern": "^(:(\\d{1,5})|([0-9]{1,3}\\.){3}[0-9]{1,3}:(\\d{1,5}))$",
+      "examples": [":8080", "0.0.0.0:8080"]
+    },
+    "upstreams": {
+      "type": "array",
+      "description": "List of upstream DNS servers to forward queries to.",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9.-]+:\\d+$",
+        "examples": ["8.8.8.8:53", "1.1.1.1:53"]
+      },
+      "uniqueItems": true
+    },
+    "log_level": {
+      "type": "string",
+      "description": "Logging verbosity level.",
+      "enum": ["debug", "info", "warn", "error"],
+      "default": "info"
+    },
+    "config_dir": {
+      "type": "string",
+      "description": "Path to the directory containing zone YAML files.",
+      "minLength": 1,
+      "default": "config/zones"
+    },
+    "username": {
+      "type": "string",
+      "description": "Username for dashboard login. Overridden by KLYRO_USER env var.",
+      "minLength": 1,
+      "default": "admin"
+    },
+    "password": {
+      "type": "string",
+      "description": "Password for dashboard login. Overridden by KLYRO_PASS env var.",
+      "minLength": 1,
+      "default": "admin"
+    }
+  },
+  "additionalProperties": false
+}
