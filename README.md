@@ -57,6 +57,8 @@ docker run -d \
   -v ~/klyro/config/zones:/app/config/zones \
   -e KLYRO_USER=admin \
   -e KLYRO_PASS=admin \
+  ghcr.io/klyro-dns/klyro:latest
+
 
 ```
 This starts KlyroDNS with:
