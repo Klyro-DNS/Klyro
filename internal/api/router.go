@@ -12,7 +12,7 @@ import (
 	"github.com/klyro/dns/internal/models"
 )
 
-//go:embed dashboard/*
+//go:embed all:dashboard
 var dashboardFS embed.FS
 
 type Router struct {
