@@ -9,23 +9,27 @@ import { QueryLog } from '../../models/dns.models';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="topbar">
+    <div class="page-header">
       <div>
-        <h2>Query Log</h2>
-        <div class="subtitle">Live DNS query stream</div>
+        <h1>Query Log</h1>
+        <p class="subtitle">Live DNS query stream</p>
       </div>
-      <div class="d-flex gap-2">
+      <div class="header-actions">
         <div class="search-box">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
           <input class="form-control" [(ngModel)]="searchTerm" (ngModelChange)="filterQueries()" placeholder="Search domain or IP...">
         </div>
-        <button class="btn" (click)="loadQueries()">Refresh</button>
+        <button class="btn" (click)="loadQueries()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Refresh
+        </button>
       </div>
     </div>
+
     <div class="card">
-      <table class="table mb-0">
+      <table>
         <thead>
           <tr>
             <th>Time</th>
@@ -56,26 +60,38 @@ import { QueryLog } from '../../models/dns.models';
     </div>
   `,
   styles: [`
-    .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; }
-    .topbar h2 { font-size: 24px; font-weight: 700; }
-    .subtitle { color: var(--text3); font-size: 13px; margin-top: 2px; }
-    .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-    table { width: 100%; border-collapse: collapse; }
-    th { text-align: left; padding: 10px 20px; border-bottom: 1px solid var(--border); color: var(--text3); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; background: var(--bg3); }
-    td { padding: 12px 20px; border-bottom: 1px solid rgba(30,45,61,.5); font-size: 13px; color: var(--text2); }
-    tr:hover td { background: rgba(34,211,238,.02); }
-    .badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-    .badge-success { background: rgba(16,185,129,.1); color: var(--green); }
-    .badge-info { background: rgba(34,211,238,.1); color: var(--accent); }
-    .badge-danger { background: rgba(239,68,68,.1); color: var(--red); }
-    .badge-purple { background: rgba(167,139,250,.1); color: var(--purple); }
-    .btn { padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg3); color: var(--text); cursor: pointer; font-size: 13px; font-weight: 500; transition: all .15s; display: inline-flex; align-items: center; gap: 6px; }
-    .btn:hover { background: var(--bg4); border-color: var(--border2); }
-    .search-box { position: relative; }
-    .search-box input { padding-left: 36px; }
-    .search-box svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--text3); }
-    .form-control { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 14px; }
-    .form-control:focus { border-color: var(--accent); box-shadow: 0 0 0 0.2rem rgba(34, 211, 238, 0.15); }
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 28px;
+    }
+    .page-header h1 { font-size: 24px; font-weight: 700; }
+    .subtitle { color: var(--text3); font-size: 13px; margin-top: 4px; }
+    .header-actions { display: flex; gap: 8px; align-items: center; }
+    .search-box {
+      position: relative;
+    }
+    .search-box input {
+      padding-left: 36px;
+      width: 260px;
+    }
+    .search-box svg {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      color: var(--text3);
+    }
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .text-muted { color: var(--text3) !important; }
     .empty { text-align: center; padding: 48px 20px; color: var(--text3); font-size: 14px; }
   `]
 })
@@ -86,16 +102,11 @@ export class QueriesComponent implements OnInit {
 
   constructor(private api: ApiService) {}
 
-  ngOnInit() {
-    this.loadQueries();
-  }
+  ngOnInit() { this.loadQueries(); }
 
   loadQueries() {
     this.api.getQueries().subscribe({
-      next: (queries) => {
-        this.allQueries = queries;
-        this.filterQueries();
-      }
+      next: (queries) => { this.allQueries = queries; this.filterQueries(); }
     });
   }
 

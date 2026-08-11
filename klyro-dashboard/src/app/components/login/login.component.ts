@@ -10,22 +10,30 @@ import { AuthService } from '../../services/auth.service';
   imports: [CommonModule, FormsModule],
   template: `
     <div class="login-wrap">
+      <div class="login-bg"></div>
       <div class="login-box">
-        <h2>Klyro DNS</h2>
-        <p>Sign in to your DNS management console</p>
+        <div class="logo">
+          <img src="logo-horizontal.png" alt="Klyro" class="logo-img">
+          <h1>Klyro DNS</h1>
+          <p>Sign in to your dashboard</p>
+        </div>
         @if (error) {
           <div class="alert alert-danger">{{ error }}</div>
         }
-        <div class="mb-3">
-          <label class="form-label">Username</label>
-          <input class="form-control" [(ngModel)]="username" placeholder="admin" autofocus (keydown.enter)="doLogin()">
+        <div class="form-group">
+          <label>Username</label>
+          <input class="form-control" [(ngModel)]="username" placeholder="Enter username" autofocus (keydown.enter)="doLogin()">
         </div>
-        <div class="mb-3">
-          <label class="form-label">Password</label>
-          <input class="form-control" type="password" [(ngModel)]="password" placeholder="password" (keydown.enter)="doLogin()">
+        <div class="form-group">
+          <label>Password</label>
+          <input class="form-control" type="password" [(ngModel)]="password" placeholder="Enter password" (keydown.enter)="doLogin()">
         </div>
-        <button class="btn btn-primary w-100" (click)="doLogin()" [disabled]="loading">
-          @if (loading) { Signing in... } @else { Sign In }
+        <button class="btn-login" (click)="doLogin()" [disabled]="loading">
+          @if (loading) {
+            <span class="spinner"></span> Signing in...
+          } @else {
+            Sign In
+          }
         </button>
       </div>
     </div>
@@ -37,41 +45,92 @@ import { AuthService } from '../../services/auth.service';
       align-items: center;
       min-height: 100vh;
       background: var(--bg);
+      position: relative;
+      overflow: hidden;
+    }
+    .login-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 50%, rgba(99, 102, 241, .08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(34, 197, 94, .05) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 80%, rgba(167, 139, 250, .05) 0%, transparent 50%);
     }
     .login-box {
-      background: var(--bg2);
+      position: relative;
+      background: rgba(17, 24, 39, .8);
+      backdrop-filter: blur(20px);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 48px;
-      width: 420px;
-      box-shadow: 0 25px 50px -12px rgba(0,0,0,.5);
+      border-radius: var(--radius-lg);
+      padding: 40px;
+      width: 400px;
+      box-shadow: var(--card-shadow-lg);
     }
-    .login-box h2 {
-      font-size: 28px;
-      font-weight: 700;
-      margin-bottom: 4px;
-      background: linear-gradient(135deg, var(--accent), var(--green));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .login-box p {
-      color: var(--text3);
-      font-size: 14px;
+    .logo {
+      text-align: center;
       margin-bottom: 32px;
     }
-    .form-control {
-      background: var(--bg);
-      border-color: var(--border);
+    .logo-img {
+      height: 48px;
+      width: auto;
+      margin-bottom: 16px;
+    }
+    .logo h1 {
+      font-size: 24px;
+      font-weight: 700;
       color: var(--text);
+      margin-bottom: 4px;
     }
-    .form-control:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 0.2rem rgba(34, 211, 238, 0.15);
-    }
-    .form-label {
+    .logo p {
       color: var(--text3);
-      font-size: 12px;
+      font-size: 14px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
       font-weight: 500;
+      color: var(--text2);
+    }
+    .btn-login {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, var(--accent), var(--accent3));
+      border: none;
+      border-radius: var(--radius-sm);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .2s;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-login:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(99, 102, 241, .3);
+    }
+    .btn-login:disabled {
+      opacity: .7;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
   `]
 })
@@ -89,6 +148,7 @@ export class LoginComponent {
       return;
     }
     this.loading = true;
+    this.error = '';
     this.auth.login(this.username, this.password).subscribe({
       next: () => {
         this.auth.setUsername(this.username);

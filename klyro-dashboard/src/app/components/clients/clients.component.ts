@@ -8,39 +8,53 @@ import { Client } from '../../models/dns.models';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="topbar">
+    <div class="page-header">
       <div>
-        <h2>Clients</h2>
-        <div class="subtitle">Connected DNS clients</div>
+        <h1>Clients</h1>
+        <p class="subtitle">Connected DNS clients</p>
       </div>
-      <button class="btn" (click)="loadClients()">Refresh</button>
+      <button class="btn" (click)="loadClients()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        Refresh
+      </button>
     </div>
-    <div class="row g-3 mb-4">
-      <div class="col-md-4">
-        <div class="stat-card">
-          <div class="label">Active Clients</div>
-          <div class="value">{{ clients.length }}</div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon clients">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">Active Clients</div>
+          <div class="stat-value">{{ clients.length }}</div>
         </div>
       </div>
-      <div class="col-md-4">
-        <div class="stat-card">
-          <div class="label">Total Queries</div>
-          <div class="value">{{ formatNum(totalQueries) }}</div>
+      <div class="stat-card">
+        <div class="stat-icon queries">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">Total Queries</div>
+          <div class="stat-value">{{ formatNum(totalQueries) }}</div>
         </div>
       </div>
-      <div class="col-md-4">
-        <div class="stat-card">
-          <div class="label">QPS</div>
-          <div class="value">{{ qps }}</div>
+      <div class="stat-card">
+        <div class="stat-icon qps">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">QPS</div>
+          <div class="stat-value">{{ qps }}</div>
         </div>
       </div>
     </div>
+
     <div class="card">
-      <table class="table mb-0">
+      <table>
         <thead>
           <tr>
             <th>Client IP</th>
-            <th>Total Queries</th>
+            <th>Total</th>
             <th>A</th>
             <th>AAAA</th>
             <th>CNAME</th>
@@ -71,19 +85,50 @@ import { Client } from '../../models/dns.models';
     </div>
   `,
   styles: [`
-    .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; }
-    .topbar h2 { font-size: 24px; font-weight: 700; }
-    .subtitle { color: var(--text3); font-size: 13px; margin-top: 2px; }
-    .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; }
-    .stat-card .label { font-size: 13px; color: var(--text3); font-weight: 500; margin-bottom: 8px; }
-    .stat-card .value { font-size: 32px; font-weight: 700; line-height: 1; }
-    .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-    table { width: 100%; border-collapse: collapse; }
-    th { text-align: left; padding: 10px 20px; border-bottom: 1px solid var(--border); color: var(--text3); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; background: var(--bg3); }
-    td { padding: 12px 20px; border-bottom: 1px solid rgba(30,45,61,.5); font-size: 13px; color: var(--text2); }
-    tr:hover td { background: rgba(34,211,238,.02); }
-    .btn { padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg3); color: var(--text); cursor: pointer; font-size: 13px; font-weight: 500; transition: all .15s; display: inline-flex; align-items: center; gap: 6px; }
-    .btn:hover { background: var(--bg4); border-color: var(--border2); }
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 28px;
+    }
+    .page-header h1 { font-size: 24px; font-weight: 700; }
+    .subtitle { color: var(--text3); font-size: 13px; margin-top: 4px; }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    .stat-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .stat-icon svg { width: 22px; height: 22px; }
+    .stat-icon.clients { background: rgba(99, 102, 241, .1); color: var(--accent2); }
+    .stat-icon.queries { background: rgba(34, 197, 94, .1); color: var(--green); }
+    .stat-icon.qps { background: rgba(245, 158, 11, .1); color: var(--orange); }
+    .stat-label { font-size: 12px; color: var(--text3); font-weight: 500; margin-bottom: 4px; }
+    .stat-value { font-size: 28px; font-weight: 700; line-height: 1; }
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
     .empty { text-align: center; padding: 48px 20px; color: var(--text3); font-size: 14px; }
   `]
 })
@@ -94,9 +139,7 @@ export class ClientsComponent implements OnInit {
 
   constructor(private api: ApiService) {}
 
-  ngOnInit() {
-    this.loadClients();
-  }
+  ngOnInit() { this.loadClients(); }
 
   loadClients() {
     this.api.getClients().subscribe({
