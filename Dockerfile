@@ -20,6 +20,6 @@ FROM alpine:3.19
 RUN apk add --no-cache ca-certificates
 WORKDIR /app
 COPY --from=builder /klyrodns .
-COPY config/ config/
+# COPY config/ config/
 EXPOSE 5353/udp 5353/tcp 8080
 ENTRYPOINT ["/app/klyrodns"]
