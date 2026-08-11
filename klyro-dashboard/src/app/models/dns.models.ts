@@ -1,6 +1,14 @@
 export interface Zone {
   name: string;
   type: string;
+  enabled: boolean;
+  records: number;
+}
+
+export interface ZoneDetail {
+  name: string;
+  type: string;
+  enabled: boolean;
   records: DnsRecord[];
 }
 
