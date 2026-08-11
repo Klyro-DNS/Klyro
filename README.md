@@ -20,30 +20,7 @@ KlyroDNS lets you manage your own DNS zones and records through a clean REST API
 
 ---
 
-## Project Structure
-
-```
-.
-├── cmd/
-│   └── klyrodns/       # Application entrypoint
-├── internal/
-│   ├── api/            # HTTP router, handlers, auth, embedded dashboard
-│   ├── config/         # Config loading, zone persistence, schema validation
-│   ├── dns/            # DNS server (UDP+TCP) and query handler
-│   └── models/         # Zone, Record, Store, QueryTracker types
-├── config/
-│   └── zones/          # Zone YAML files (loaded at startup)
-├── example/            # Example config and zone files
-├── config.yaml         # Main server configuration
-├── Dockerfile
-└── docker-compose.yml
-```
-
----
-
 ## Quick Start
-
-### Run with Docker (recommended)
 
 ```bash
 docker compose up -d
@@ -53,12 +30,7 @@ This starts KlyroDNS with:
 - DNS server on port `5353` (UDP + TCP)
 - Web dashboard on port `8080`
 
-### Run locally
-
-```bash
-go build -o klyrodns ./cmd/klyrodns
-./klyrodns
-```
+Default credentials: `admin` / `admin`
 
 ---
 
@@ -80,26 +52,10 @@ password: "admin"
 
 You can also set the config file path via the `KLYRO_CONFIG` environment variable.
 
----
+### Schema
 
-## REST API
-
-All management endpoints require authentication. Login via `POST /api/login`.
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/login` | Login |
-| `POST` | `/api/logout` | Logout |
-| `GET` | `/api/zones` | List all zones |
-| `POST` | `/api/zones` | Create a zone |
-| `DELETE` | `/api/zones/{name}` | Delete a zone |
-| `GET` | `/api/zones/{name}/records` | List records in a zone |
-| `POST` | `/api/zones/{name}/records` | Add a record |
-| `DELETE` | `/api/zones/{name}/records/{record}` | Delete a record |
-| `GET` | `/api/clients` | List tracked clients |
-| `GET` | `/api/clients/{ip}` | Get client details |
-| `GET` | `/api/queries` | Get recent queries |
-| `GET` | `/api/stats` | Get query stats |
+- [Config Schema](https://github.com/Klyro-DNS/Klyro/releases/download/1.0.2/config.schema.json)
+- [Zone Schema](https://github.com/Klyro-DNS/Klyro/releases/download/1.0.2/zone.schema.json)
 
 ---
 
@@ -119,6 +75,4 @@ records:
 ```
 
 ---
-
-
 
