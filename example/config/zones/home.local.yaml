@@ -1,5 +1,5 @@
-$schema: "../../../zone.schema.json"
-name: FUN.local
+$schema: "https://github.com/Klyro-DNS/Klyro/releases/download/1.0.2/zone.schema.json"
+name: home.local
 type: primary
 enabled: true
 records:
