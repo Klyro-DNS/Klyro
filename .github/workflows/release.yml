@@ -82,6 +82,8 @@ jobs:
 
       - name: Build & Push Docker image
         uses: docker/build-push-action@v6
+        env:
+          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
         with:
           context: .
           push: true
