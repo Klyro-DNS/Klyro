@@ -1,4 +1,4 @@
-$schema: "../config.schema.json"
+$schema: "https://github.com/Klyro-DNS/Klyro/releases/download/1.0.2/config.schema.json"
 listen_addr: ":5353"
 http_addr: ":8080"
 upstreams:

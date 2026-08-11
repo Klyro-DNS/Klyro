@@ -1,5 +1,5 @@
-$schema: "../../../zone.schema.json"
-name: osama.com
+$schema: "https://github.com/Klyro-DNS/Klyro/releases/download/1.0.2/zone.schema.json"
+name: example.com
 type: primary
 enabled: true
 records:
