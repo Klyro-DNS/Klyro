@@ -25,6 +25,7 @@ func NewHandler(store *models.Store, upstreams []string, tracker *models.QueryTr
 }
 
 func (h *Handler) HandleDNS(w dns.ResponseWriter, req *dns.Msg) {
+	start := time.Now()
 	resp := new(dns.Msg)
 	resp.SetReply(req)
 	resp.Authoritative = true
@@ -53,10 +54,10 @@ func (h *Handler) HandleDNS(w dns.ResponseWriter, req *dns.Msg) {
 	}
 
 	if zone == nil {
-		log.Printf("[DNS] %s %s from %s -> forward", name, qtype, clientIP)
 		entry.Response = "forward"
 		h.Tracker.Record(entry)
 		h.forward(w, req)
+		entry.Latency = time.Since(start).Milliseconds()
 		return
 	}
 
@@ -69,6 +70,7 @@ func (h *Handler) HandleDNS(w dns.ResponseWriter, req *dns.Msg) {
 	if len(records) == 0 {
 		resp.Rcode = dns.RcodeNameError
 		entry.Response = "nxdomain"
+		entry.Latency = time.Since(start).Milliseconds()
 		h.Tracker.Record(entry)
 		w.WriteMsg(resp)
 		return
@@ -86,8 +88,10 @@ func (h *Handler) HandleDNS(w dns.ResponseWriter, req *dns.Msg) {
 		entry.Response = "nxdomain"
 	} else {
 		entry.Response = "success"
+		entry.CacheHit = false
 	}
 
+	entry.Latency = time.Since(start).Milliseconds()
 	h.Tracker.Record(entry)
 	w.WriteMsg(resp)
 }

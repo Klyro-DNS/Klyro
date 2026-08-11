@@ -118,7 +118,7 @@ func (r *Router) listQueries(w http.ResponseWriter, req *http.Request) {
 }
 
 func (r *Router) getStats(w http.ResponseWriter, req *http.Request) {
-	stats := r.Tracker.Stats()
+	stats := r.Tracker.GetDashboardStats(len(r.Store.ListZones()))
 	json.NewEncoder(w).Encode(stats)
 }
 
