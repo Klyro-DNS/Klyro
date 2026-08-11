@@ -3,8 +3,8 @@ services:
     build: .
     container_name: klyrodns
     ports:
-      - "5353:5353/udp"
-      - "5353:5353/tcp"
+      - "5350:5353/udp"
+      - "5350:5353/tcp"
       - "8080:8080"
     volumes:
       - ./config.yaml:/app/config.yaml:ro
