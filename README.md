@@ -24,6 +24,28 @@ KlyroDNS lets you manage your own DNS zones and records through a clean REST API
 
 The fastest way to get KlyroDNS running:
 
+### Option 1: Run without config files
+
+Start the server with zero config, then create your zones and records from the dashboard:
+
+```bash
+docker run -d \
+  --name klyrodns \
+  --restart unless-stopped \
+  -p 5353:5353/udp \
+  -p 5353:5353/tcp \
+  -p 8080:8080 \
+  -e KLYRO_USER=admin \
+  -e KLYRO_PASS=admin \
+  ghcr.io/klyro-dns/klyro:latest
+```
+
+Open `http://localhost:8080`, login with `admin` / `admin`, and start adding zones and records from the UI.
+
+### Option 2: Run with your own config files
+
+If you already have a `config.yaml` and zone files, mount them as volumes:
+
 ```bash
 docker run -d \
   --name klyrodns \
@@ -35,14 +57,14 @@ docker run -d \
   -v ~/klyro/config/zones:/app/config/zones \
   -e KLYRO_USER=admin \
   -e KLYRO_PASS=admin \
-  ghcr.io/klyro-dns/klyro:latest
-```
 
+```
 This starts KlyroDNS with:
 - DNS server on port `5353` (UDP + TCP)
 - Web dashboard on port `8080`
 
 Default credentials: `admin` / `admin`
+> **Don't have config files yet?** Use Option 1 and manage everything from the dashboard.
 
 Open `http://localhost:8080` in your browser to access the dashboard.
 
