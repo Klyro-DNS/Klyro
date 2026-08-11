@@ -19,6 +19,10 @@ jobs:
         id: version
         run: echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
+      - name: Set package version
+        working-directory: klyro-dashboard
+        run: npm version ${{ steps.version.outputs.tag }} --no-git-tag-version
+
       - name: Package schemas
         run: |
           mkdir -p dist/schemas
