@@ -53,9 +53,10 @@ func (r *Router) Setup() http.Handler {
 	mux.Handle("GET /api/queries", r.Auth.RequireAuth(http.HandlerFunc(r.listQueries)))
 	mux.Handle("GET /api/stats", r.Auth.RequireAuth(http.HandlerFunc(r.getStats)))
 
-	// Dashboard (static files, no auth required for the HTML itself)
+	// Dashboard SPA (serves index.html for all non-API routes)
 	subFS, _ := fs.Sub(dashboardFS, "dashboard")
-	mux.Handle("GET /", http.FileServer(http.FS(subFS)))
+	spa := &spaHandler{fs: subFS}
+	mux.Handle("GET /", spa)
 
 	return mux
 }
@@ -257,4 +258,28 @@ func parseRecordID(id string) recordRef {
 		}
 	}
 	return recordRef{name: id, rtype: ""}
+}
+
+type spaHandler struct {
+	fs fs.FS
+}
+
+func (h *spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	path := r.URL.Path
+	if path == "/" {
+		path = "index.html"
+	} else {
+		path = path[1:]
+	}
+
+	// Try to open the requested file
+	f, err := h.fs.Open(path)
+	if err != nil {
+		// Not found, serve index.html for SPA routing
+		r.URL.Path = "/"
+		http.FileServerFS(h.fs).ServeHTTP(w, r)
+		return
+	}
+	f.Close()
+	http.FileServerFS(h.fs).ServeHTTP(w, r)
 }
